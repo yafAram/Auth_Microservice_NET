@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\MicroServices.Auth.API.props" />
+</Project>
