@@ -1,0 +1,20 @@
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+WORKDIR /src
+
+COPY ["Auth_Microservice_NET.csproj", "."]
+RUN dotnet restore "Auth_Microservice_NET.csproj"
+
+COPY . .
+RUN dotnet publish "Auth_Microservice_NET.csproj" -c Release -o /app
+
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
+WORKDIR /app
+COPY --from=build /app .
+
+# Instala EF Core Tools para migraciones
+RUN dotnet tool install --global dotnet-ef
+ENV PATH="$PATH:/root/.dotnet/tools"
+
+ENV RUN_MIGRATIONS=1
+
+ENTRYPOINT ["sh", "-c", "if [ \"$RUN_MIGRATIONS\" = \"1\" ]; then dotnet ef database update; fi && dotnet Auth_Microservice_NET.dll"]
